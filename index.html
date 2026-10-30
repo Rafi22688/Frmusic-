@@ -1,0 +1,306 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090812">
+<title>FR MUSIC</title>
+<style>
+:root{--bg:#090812;--card:#171426;--purple:#9b65ff;--pink:#ef55ae;--muted:#aaa5bb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:white;font-family:Arial,sans-serif;padding-bottom:90px}
+header{height:65px;padding:0 17px;display:flex;align-items:center;justify-content:space-between;background:#100e1df5;position:sticky;top:0;z-index:10;border-bottom:1px solid #29243b}
+.logo{font-size:24px;font-weight:900;letter-spacing:-1px}
+.logo span{color:var(--purple)}
+button{cursor:pointer;color:white}
+.icon{border:0;background:#282139;border-radius:50%;width:40px;height:40px;font-size:19px}
+main{max-width:850px;margin:auto;padding:16px}
+.page{display:none}.page.active{display:block}
+.search{display:flex;gap:8px;margin:8px 0 20px}
+input,select{background:#1b1829;color:white;border:1px solid #383149;border-radius:12px;padding:13px;min-width:0}
+.search input{flex:1}
+.primary{background:linear-gradient(120deg,var(--purple),var(--pink));border:0;border-radius:12px;padding:13px 18px;font-weight:bold}
+h2{font-size:21px}
+.hero{padding:24px 20px;border-radius:20px;background:linear-gradient(120deg,#30205c,#791c67,#211b42);margin-bottom:22px}
+.hero h1{font-size:29px;margin:5px 0}
+.hero p{color:#e4d8ff;font-size:13px}
+.hero button{background:white;color:#271443;border:0;border-radius:25px;padding:11px 18px;font-weight:bold}
+.heading{display:flex;align-items:center;justify-content:space-between;margin:22px 0 13px}
+.heading h3{margin:0}
+.muted{color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.song{min-width:0;cursor:pointer}
+.cover{height:auto;aspect-ratio:1.35;background:linear-gradient(135deg,#512b84,#171329,#8d286e);border-radius:14px;display:grid;place-items:center;position:relative;overflow:hidden}
+.cover img{width:100%;height:100%;object-fit:cover}
+.cover span{font-size:36px}
+.cover b{position:absolute;bottom:7px;right:7px;background:#000a;border-radius:7px;padding:5px;font-size:11px}
+.song h4{font-size:13px;margin:8px 0 4px;line-height:1.4}
+.song p{font-size:11px;color:var(--muted);margin:0}
+.panel{background:var(--card);border:1px solid #2b263b;border-radius:17px;padding:17px;margin-bottom:15px}
+.panel input,.panel select{width:100%;margin:7px 0 14px}
+.panel label{font-size:13px;color:#ddd}
+.panel button{width:100%}
+#video{width:100%;max-height:55vh;background:#000;border-radius:15px}
+.player-actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.action{background:#29233a;border:1px solid #403650;padding:10px 13px;border-radius:25px}
+.action.active{background:#633bb0}
+.player-title{font-size:19px;margin:13px 0 6px}
+#seek{width:100%;accent-color:var(--purple)}
+.now-cover{width:190px;max-width:70%;aspect-ratio:1;margin:15px auto;border-radius:20px;background:linear-gradient(135deg,#6337a0,#e34b9d);display:grid;place-items:center;font-size:65px;box-shadow:0 10px 40px #9b65ff33}
+.audio-panel{text-align:center}
+.audio-panel h2{margin-bottom:5px}
+.audio-controls{display:flex;justify-content:center;gap:20px;align-items:center;margin:20px}
+.audio-controls button{border:0;border-radius:50%;width:48px;height:48px;background:#302442;font-size:20px}
+.audio-controls .play{width:62px;height:62px;background:linear-gradient(120deg,var(--purple),var(--pink))}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#151221;border-top:1px solid #302a40;display:flex;justify-content:space-around;padding:10px 3px calc(10px + env(safe-area-inset-bottom))}
+.nav button{background:none;border:0;color:#aaa;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px}
+.nav button strong{font-size:21px}
+.nav button.active{color:#c59aff}
+.empty{text-align:center;color:var(--muted);padding:30px}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#302442;padding:12px 18px;border-radius:12px;display:none;z-index:40;font-size:13px}
+@media(min-width:650px){.grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">FR <span>MUSIC</span></div>
+ <button class="icon" onclick="go('upload')">＋</button>
+</header>
+
+<main>
+<section id="home" class="page active">
+ <div class="search">
+  <input id="query" placeholder="গান বা শিল্পী খুঁজুন..." oninput="render()">
+  <button class="primary" onclick="render()">⌕</button>
+ </div>
+ <div class="hero">
+  <p>WELCOME TO YOUR MUSIC WORLD</p>
+  <h1>Feel Every Beat ♫</h1>
+  <p>Discover music. Watch videos. Enjoy every moment.</p>
+  <button onclick="go('library')">Explore Music</button>
+ </div>
+ <div class="heading"><h3>♫ Latest Music</h3><span class="muted" id="count">0 Songs</span></div>
+ <div class="grid" id="songs"></div>
+</section>
+
+<section id="library" class="page">
+ <h2>♫ Music Library</h2>
+ <p class="muted">তোমার যোগ করা সব গান এখানে থাকবে।</p>
+ <div class="grid" id="librarySongs"></div>
+</section>
+
+<section id="upload" class="page">
+ <h2>＋ Upload Music</h2>
+ <div class="panel">
+  <label>গানের নাম</label>
+  <input id="title" placeholder="গানের নাম লিখুন">
+  <label>শিল্পী / চ্যানেল</label>
+  <input id="artist" placeholder="শিল্পীর নাম">
+  <label>গানের ক্যাটাগরি</label>
+  <select id="category">
+   <option>বাংলা গান</option><option>হিন্দি গান</option>
+   <option>ইংরেজি গান</option><option>অন্যান্য</option>
+  </select>
+  <label>ভিডিও ফাইল নির্বাচন করুন</label>
+  <input id="file" type="file" accept="video/*">
+  <label>কভার ছবি (ঐচ্ছিক)</label>
+  <input id="image" type="file" accept="image/*">
+  <p class="muted">সর্বোচ্চ দৈর্ঘ্য ৭ মিনিট। নিজের বা অনুমতিপ্রাপ্ত গান আপলোড করো।</p>
+  <button class="primary" onclick="upload()">Upload Now ♫</button>
+  <p class="muted" id="status"></p>
+ </div>
+</section>
+
+<section id="watch" class="page">
+ <button class="action" onclick="go('home')">← Back</button>
+ <video id="video" controls playsinline preload="metadata"></video>
+ <h2 class="player-title" id="watchTitle"></h2>
+ <p class="muted" id="watchArtist"></p>
+ <div class="player-actions">
+  <button class="action" id="like" onclick="like()">♥ Like</button>
+  <button class="action" onclick="share()">↗ Share</button>
+  <button class="action" onclick="audio()">♫ Audio Mode</button>
+ </div>
+ <div class="panel">
+  <h3>About this song</h3>
+  <p class="muted" id="watchCategory"></p>
+ </div>
+</section>
+
+<section id="audioPage" class="page">
+ <div class="panel audio-panel">
+  <p class="muted">FR MUSIC PLAYER</p>
+  <div class="now-cover">♫</div>
+  <h2 id="audioTitle">No song selected</h2>
+  <p class="muted" id="audioArtist">Choose a song to listen</p>
+  <audio id="audioPlayer" preload="metadata" style="width:100%"></audio>
+  <input id="seek" type="range" min="0" max="100" value="0">
+  <div class="audio-controls">
+   <button onclick="previous()">◀</button>
+   <button class="play" onclick="togglePlay()">▶</button>
+   <button onclick="next()">▶</button>
+  </div>
+  <p class="muted">Audio playback</p>
+ </div>
+</section>
+
+<section id="profile" class="page">
+ <div class="panel audio-panel">
+  <div class="now-cover">FR</div>
+  <h2>FR MUSIC</h2>
+  <p class="muted">Music Sharing Platform</p>
+  <p id="profileCount" class="muted"></p>
+  <button class="primary" onclick="go('upload')">＋ Upload Music</button>
+ </div>
+ <div class="panel">
+  <h3>About</h3>
+  <p class="muted">Discover and enjoy music on FR MUSIC.</p>
+ </div>
+</section>
+</main>
+
+<nav class="nav">
+ <button class="active" data-page="home" onclick="go('home')"><strong>⌂</strong>Home</button>
+ <button data-page="library" onclick="go('library')"><strong>♫</strong>Library</button>
+ <button data-page="upload" onclick="go('upload')"><strong>＋</strong>Upload</button>
+ <button data-page="audioPage" onclick="go('audioPage')"><strong>▶</strong>Player</button>
+ <button data-page="profile" onclick="go('profile')"><strong>◉</strong>Profile</button>
+</nav>
+<div id="toast" class="toast"></div>
+
+<script>
+let songs=[];
+let selected=-1;
+let audioIndex=-1;
+let objectUrls=[];
+
+const el=id=>document.getElementById(id);
+
+function message(t){
+ el('toast').textContent=t;
+ el('toast').style.display='block';
+ clearTimeout(window.msgTimer);
+ window.msgTimer=setTimeout(()=>el('toast').style.display='none',2200);
+}
+function go(page){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ el(page).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
+ if(page==='library')renderLibrary();
+ if(page==='profile')el('profileCount').textContent=songs.length+' songs added in this browser';
+ window.scrollTo(0,0);
+}
+function escapeHTML(s){
+ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function card(s,i){
+ return `<div class="song" onclick="playSong(${i})">
+ <div class="cover">${s.image?`<img src="${s.image}">`:'<span>♫</span>'}<b>${s.duration}</b></div>
+ <h4>${escapeHTML(s.title)}</h4><p>${escapeHTML(s.artist)} · ${escapeHTML(s.category)}</p>
+ </div>`;
+}
+function render(){
+ let q=el('query').value.toLowerCase();
+ let list=songs.map((s,i)=>({s,i})).filter(x=>(x.s.title+' '+x.s.artist+' '+x.s.category).toLowerCase().includes(q));
+ el('songs').innerHTML=list.length?list.map(x=>card(x.s,x.i)).join(''):'<div class="empty">এখনো কোনো গান নেই। Upload থেকে প্রথম গান যোগ করো।</div>';
+ el('count').textContent=songs.length+' Songs';
+}
+function renderLibrary(){
+ el('librarySongs').innerHTML=songs.length?songs.map((s,i)=>card(s,i)).join(''):'<div class="empty">তোমার লাইব্রেরি এখনো খালি।</div>';
+}
+function playSong(i){
+ selected=i;
+ const s=songs[i];
+ el('video').src=s.url;
+ el('watchTitle').textContent=s.title;
+ el('watchArtist').textContent=s.artist;
+ el('watchCategory').textContent=s.category;
+ el('like').textContent='♥ Like ('+s.likes+')';
+ go('watch');
+ el('video').play().catch(()=>{});
+}
+function like(){
+ if(selected<0)return;
+ songs[selected].likes++;
+ el('like').textContent='♥ Like ('+songs[selected].likes+')';
+}
+function share(){
+ if(selected<0)return;
+ let s=songs[selected];
+ if(navigator.share)navigator.share({title:s.title,text:s.artist,url:location.href}).catch(()=>{});
+ else message('এই পেজের লিংক শেয়ার করুন।');
+}
+function audio(){
+ if(selected<0)return;
+ audioIndex=selected;
+ const s=songs[audioIndex];
+ el('audioPlayer').src=s.url;
+ el('audioTitle').textContent=s.title;
+ el('audioArtist').textContent=s.artist;
+ go('audioPage');
+ el('audioPlayer').play().catch(()=>message('Play চাপ দিয়ে গান চালু করুন'));
+}
+function togglePlay(){
+ let a=el('audioPlayer');
+ if(!a.src){if(selected>=0)audio();else message('আগে একটি গান নির্বাচন করুন');return;}
+ if(a.paused)a.play().catch(()=>{});else a.pause();
+}
+function previous(){if(audioIndex>0){audioIndex--;loadAudio();}}
+function next(){if(audioIndex<songs.length-1){audioIndex++;loadAudio();}}
+function loadAudio(){
+ let s=songs[audioIndex];if(!s)return;
+ el('audioPlayer').src=s.url;
+ el('audioTitle').textContent=s.title;
+ el('audioArtist').textContent=s.artist;
+ el('audioPlayer').play().catch(()=>{});
+}
+el('audioPlayer').ontimeupdate=()=>{
+ let a=el('audioPlayer');
+ if(a.duration)el('seek').value=a.currentTime/a.duration*100;
+};
+el('seek').oninput=()=>{
+ let a=el('audioPlayer');
+ if(a.duration)a.currentTime=Number(el('seek').value)/100*a.duration;
+};
+el('audioPlayer').onended=()=>next();
+
+function upload(){
+ let file=el('file').files[0];
+ let title=el('title').value.trim();
+ let artist=el('artist').value.trim();
+ if(!file||!title||!artist){message('গানের নাম, শিল্পী ও ভিডিও নির্বাচন করো');return;}
+ if(!file.type.startsWith('video/')){message('সঠিক ভিডিও ফাইল নির্বাচন করো');return;}
+ const url=URL.createObjectURL(file);
+ const probe=document.createElement('video');
+ probe.preload='metadata';
+ probe.onloadedmetadata=()=>{
+  if(!Number.isFinite(probe.duration)||probe.duration>420){
+   URL.revokeObjectURL(url);
+   el('status').textContent='ভিডিও সর্বোচ্চ ৭ মিনিট হতে পারবে।';
+   return;
+  }
+  const duration=Math.floor(probe.duration);
+  const image=el('image').files[0];
+  const add=cover=>{
+   songs.unshift({title,artist,category:el('category').value,url,
+    image:cover,duration:Math.floor(duration/60)+':'+String(duration%60).padStart(2,'0'),likes:0});
+   objectUrls.push(url);
+   el('status').textContent='ভিডিও সফলভাবে এই ডেমোতে যোগ হয়েছে।';
+   el('title').value='';el('artist').value='';
+   el('file').value='';el('image').value='';
+   render();renderLibrary();go('home');message('Music added!');
+  };
+  if(image){
+   const reader=new FileReader();
+   reader.onload=()=>add(reader.result);
+   reader.readAsDataURL(image);
+  }else add('');
+ };
+ probe.onerror=()=>{URL.revokeObjectURL(url);message('ভিডিও পড়া যায়নি');};
+ probe.src=url;
+}
+render();
+</script>
+</body>
+</html>
